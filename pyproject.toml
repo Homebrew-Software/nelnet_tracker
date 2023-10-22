@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "nelnet-tracker"
+version = "0.1.0"
+description = "Tracks status of loans on nelnet."
+authors = ["n8jhj <nathaniel-j-jones@proton.me>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "nelnet_tracker"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+selenium = "^4.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

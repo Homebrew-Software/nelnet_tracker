@@ -1,0 +1,5 @@
+= Nelnet Tracker
+
+Since https://nelnet.com/[Nelnet] doesn't do a good job of providing a nice way to view the history of loan balances and payments, the idea here is to provide something better.
+
+This project uses Selenium to scrape a user's loans webpage and extract data, then store it in a database for later use in things like visualizations and what-if scenarios.
