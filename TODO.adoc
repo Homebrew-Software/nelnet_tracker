@@ -1,3 +1,4 @@
 = TODO
 
 * [ ] Do some research into how Nelnet services loan payments and do a better job explaining it in the repo README.
+* [ ] Create a class to handle XPaths similar to how pathlib Paths handle constructing paths with the `/` (divide) operator. This one should also use the `//` (integer divide) operator when appropriate (cf. https://www.w3schools.com/xml/xpath_syntax.asp[XPath syntax]).
