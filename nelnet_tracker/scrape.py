@@ -24,10 +24,10 @@ class NodeXPath:
         else:
             return NodeXPath("/".join((self.xpath, other)))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.xpath
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"NodeXPath({self.xpath})"
 
 
@@ -42,11 +42,17 @@ class ElementFinder:
         return self.find_element(xpath).text
 
 
+# Web driver for interacting with Selenium's API.
 driver = webdriver.Firefox()
+# Custom object for encapsulating element finding boilerplate.
 finder = ElementFinder(driver)
 
 
 def scrape_web_data() -> dict:
+    """Scrapes all loan details from the Nelnet web interface and returns it in
+    a dictionary.
+    """
+
     driver.get("https://secure.nelnet.com/account/login")
 
     input("Press Enter after you have logged in.")
