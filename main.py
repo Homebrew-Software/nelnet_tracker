@@ -97,6 +97,10 @@ def main():
             loans_xpath / "u-panel-header" / "span" / "button"
         )
         details_drop_down.click()
+        # Wait for the accordion content to load.
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, str(loans_xpath / "div")))
+        )
 
         # Scrape individual loan details.
         group_data["loans"] = scrape_individual_loans(
@@ -157,7 +161,7 @@ def scrape_individual_loans(group_loans_xpath: NodeXPath) -> list[dict]:
 
     i: int = 0
     while True:
-        loan_xpath: NodeXPath = group_loans_xpath / f"div[{i}]"
+        loan_xpath: NodeXPath = group_loans_xpath / f"div[{i+1}]"
         try:
             finder.find_element(loan_xpath)
         except NoSuchElementException:
