@@ -5,6 +5,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver as FirefoxWebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 # NOTE: The order of classes (which are space-separated) in XPath class
@@ -53,7 +55,8 @@ def main():
 
     # Start by scraping overview data.
     main_node: NodeXPath = (
-        NodeXPath("/body")
+        NodeXPath("/html")
+        / "body"
         / "app-root"
         / "layout-content-layout"
         / "div[@id='mainContent']"
@@ -63,6 +66,12 @@ def main():
         / "div"
         / "div[2]"
     )
+
+    # Wait for the main content to load.
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, str(main_node)))
+    )
+
     data: dict = scrape_overview_data(main_node / "div[2]")
 
     # Loop through loans, collecting data.
