@@ -1,4 +1,6 @@
-"""Contains logic for scraping data from Nelnet's web interface."""
+"""Scrapes data from Nelnet's web interface."""
+
+import datetime as dt
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -117,6 +119,9 @@ def scrape_web_data() -> dict:
         i += 1
 
     data["groups"] = groups
+
+    # Metadata.
+    data["scrape_timestamp"] = str(dt.datetime.now())
 
     driver.close()
 

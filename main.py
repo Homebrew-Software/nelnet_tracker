@@ -1,7 +1,7 @@
 """The main script. Useful for debugging."""
 
-from nelnet_tracker.scrape import scrape_web_data
+from nelnet_tracker.database import create_database
 
 
 if __name__ == "__main__":
-    data: dict = scrape_web_data()
+    create_database()
