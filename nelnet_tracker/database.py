@@ -1,7 +1,6 @@
 """Marshals data into a SQLite database."""
 
 import os
-from pathlib import Path
 import sqlite3
 
 from .config import CONFIG
@@ -32,17 +31,6 @@ def create_database() -> None:
         """
         CREATE TABLE IF NOT EXISTS loan_group (
             name TEXT NOT NULL
-        )
-        """
-    )
-
-    # Loan table for reference in many records.
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS loan (
-            group_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            group_position INTEGER NOT NULL
         )
         """
     )
@@ -86,6 +74,18 @@ def create_database() -> None:
         """
     )
 
+    # Loan table for reference in many records.
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS loan (
+            group_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            group_placement INTEGER NOT NULL
+        )
+        """
+    )
+
+    # Loan-level data per record.
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_record (
@@ -129,9 +129,9 @@ def create_database() -> None:
 
     cur.execute(
         """
-        CREATE TABLE IF NOT EXISTS loan_disbursements (
+        CREATE TABLE IF NOT EXISTS loan_disbursement (
             loan_historic_information_id INTEGER NOT NULL,
-            disbursement_info TEXT NOT NULL
+            info TEXT NOT NULL
         )
         """
     )
@@ -148,6 +148,7 @@ def create_database() -> None:
     )
 
     con.commit()
+    con.close()
 
 
 def delete_database() -> None:
@@ -155,3 +156,262 @@ def delete_database() -> None:
     undone.
     """
     os.remove(CONFIG.database_path)
+
+
+class DatabaseRecord:
+    """A record to be inserted into the database."""
+
+    def __init__(self, data: dict) -> None:
+        self.data: dict = data
+
+    def insert_all(self) -> None:
+        """Inserts all data into the database."""
+        self.con: sqlite3.Connection = sqlite3.connect(CONFIG.database_path)
+        self.cur: sqlite3.Cursor = self.con.cursor()
+
+        main_record_id: int = self.insert_main_record()
+        self.propagate_main_record_id(main_record_id)
+        for group in self.data["groups"]:
+            group_id: int = self.insert_loan_group(group)
+            self.propagate_group_id(group_id)
+            self.insert_group_record(group)
+            self.insert_payment_information(group)
+            self.insert_balance_information(group)
+            for loan in group["loans"]:
+                loan_id: int = self.insert_loan(loan)
+                self.propagate_loan_id(loan_id)
+                self.insert_loan_record(loan)
+                self.insert_loan_current_information(loan)
+                historic_info_id: int = self.insert_loan_historic_information(loan)
+                self.insert_loan_disbursements(loan, historic_info_id)
+                self.insert_loan_benefit_details(loan)
+
+        self.con.commit()
+        self.con.close()
+
+    def insert_main_record(self) -> int:
+        """Inserts the main record data into the database and returns the new
+        main record ID.
+        """
+        self.cur.execute(
+            """
+            INSERT INTO main_record VALUES (
+                :scrape_timestamp,
+                :current_amount_due,
+                :due_date,
+                :current_balance,
+                :last_payment_received
+            )
+            """,
+            self.data,
+        )
+        row_id: int | None = self.cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("Didn't get the new main record ID")
+        return row_id
+
+    def propagate_main_record_id(self, id_: int) -> None:
+        """Propagates the given main record ID into all areas of the data
+        dictionary for convenience when using pieces of it as data for SQLite
+        INSERT statements.
+        """
+        for group in self.data["groups"]:
+            group["main_record_id"] = id_
+            group["payment_information"]["main_record_id"] = id_
+            group["balance_information"]["main_record_id"] = id_
+            for loan in group["loans"]:
+                loan["main_record_id"] = id_
+                loan["current_information"]["main_record_id"] = id_
+                loan["historic_information"]["main_record_id"] = id_
+
+    def insert_loan_group(self, group: dict) -> int:
+        """Inserts the given loan group into the database, if it does not
+        exist, and returns the new group ID.
+        """
+        self.cur.execute("SELECT id FROM loan_group WHERE :name == ?", group)
+        result: tuple | None = self.cur.fetchone()
+        if result is None:
+            self.cur.execute("INSERT INTO loan_group VALUES (:name)", group)
+            row_id: int | None = self.cur.lastrowid
+            if row_id is None:
+                raise RuntimeError("Didn't get the new loan group ID")
+            return row_id
+        return result[0]
+
+    def propagate_group_id(self, id_: int) -> None:
+        """Propagates the given loan group ID into all areas of the data
+        dictionary for convenience when using pieces of it as data for SQLite
+        INSERT statements.
+        """
+        for group in self.data["groups"]:
+            group["group_id"] = id_
+            group["payment_information"]["group_id"] = id_
+            group["balance_information"]["group_id"] = id_
+            for loan in group["loans"]:
+                loan["group_id"] = id_
+
+    def insert_group_record(self, group: dict) -> None:
+        self.cur.execute(
+            """
+            INSERT INTO group_record VALUES (
+                :main_record_id,
+                :group_id,
+                :loan_type,
+                :status,
+                :repayment_plan
+            )
+            """,
+            group,
+        )
+
+    def insert_payment_information(self, group: dict) -> None:
+        self.cur.execute(
+            """
+            INSERT INTO payment_information VALUES (
+                :main_record_id,
+                :group_id,
+                :current_amount_due,
+                :due_date,
+                :interest_rate,
+                :last_payment_received
+            )
+            """,
+            group["payment_information"],
+        )
+
+    def insert_balance_information(self, group: dict) -> None:
+        self.cur.execute(
+            """
+            INSERT INTO balance_information VALUES (
+                :main_record_id,
+                :group_id,
+                :principal_balance,
+                :accrued_interest,
+                :fees,
+                :outstanding_balance
+            )
+            """,
+            group["balance_information"],
+        )
+
+    def insert_loan(self, loan: dict) -> int:
+        """Inserts the given loan into the database, if it does not exist, and
+        returns the new loan ID.
+        """
+        self.cur.execute("SELECT id FROM loan WHERE name == :name", loan)
+        result: tuple | None = self.cur.fetchone()
+        if result is None:
+            self.cur.execute(
+                "INSERT INTO loan VALUES (:group_id, :name, :group_placement)",
+                loan,
+            )
+            row_id: int | None = self.cur.lastrowid
+            if row_id is None:
+                raise RuntimeError("Didn't get the new loan ID")
+            return row_id
+        return result[0]
+
+    def propagate_loan_id(self, id_: int) -> None:
+        """Propagates the given loan ID into all areas of the data dictionary
+        for convenience when using pieces of it as data for SQLite INSERT
+        statements.
+        """
+        for group in self.data["groups"]:
+            for loan in group["loans"]:
+                loan["loan_id"] = id_
+                loan["current_information"]["loan_id"] = id_
+                loan["historic_information"]["loan_id"] = id_
+
+    def insert_loan_record(self, loan: dict) -> None:
+        self.cur.execute(
+            """
+            INSERT INTO loan_record VALUES (
+                :main_record_id,
+                :loan_id,
+                :loan_type,
+                :loan_status,
+                :interest_subsidy,
+                :lender_name,
+                :school_name
+            )
+            """,
+            loan,
+        )
+
+    def insert_loan_current_information(self, loan: dict) -> None:
+        self.cur.execute(
+            """
+            INSERT INTO loan_current_information VALUES (
+                :main_record_id,
+                :loan_id,
+                :due_date,
+                :interest_rate,
+                :interest_rate_type,
+                :loan_term,
+                :principal_balance,
+                :accrued_interest,
+                :capitalized_interest
+            )
+            """,
+            loan["current_information"],
+        )
+
+    def insert_loan_historic_information(self, loan: dict) -> int:
+        """Inserts historic information for the given loan into the database
+        and returns the new loan historic information ID.
+        """
+        self.cur.execute(
+            """
+            INSERT INTO loan_historic_information VALUES (
+                :main_record_id,
+                :loan_id,
+                :convert_to_repayment,
+                :original_loan_amount
+            )
+            """,
+            loan["historic_information"],
+        )
+        row_id: int | None = self.cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("Didn't get the new historic information ID")
+        return row_id
+
+    def insert_loan_disbursements(self, loan: dict, historic_info_id: int) -> None:
+        for disbursement in loan["disbursements"]:
+            self.cur.execute(
+                """
+                INSERT INTO loan_disbursement VALUES (
+                    :loan_historic_information_id,
+                    :info
+                )
+                """,
+                dict(
+                    loan_historic_information_id=historic_info_id,
+                    info=disbursement,
+                ),
+            )
+
+    def insert_loan_benefit_details(self, loan: dict) -> None:
+        for benefit in loan["benefit_details"]:
+            self.cur.execute(
+                """
+                INSERT INTO loan_benefit_details VALUES (
+                    :main_record_id,
+                    :loan_id,
+                    :name,
+                    :status
+                )
+                """,
+                dict(
+                    main_record_id=loan["main_record_id"],
+                    loan_id=loan["loan_id"],
+                    name=benefit[0],
+                    status=benefit[1],
+                ),
+            )
+
+
+def write_record_to_database(data: dict) -> None:
+    """Inserts a record entry into the database."""
+    record: DatabaseRecord = DatabaseRecord(data)
+    record.insert_all()

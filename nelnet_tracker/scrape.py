@@ -142,7 +142,7 @@ def scrape_overview_data(main_node: NodeXPath) -> dict:
 def scrape_group_data(group_xpath: NodeXPath) -> dict:
     data_xpath: NodeXPath = group_xpath / "div"
     return dict(
-        group=finder.find_element_text(group_xpath / "h2"),
+        name=finder.find_element_text(group_xpath / "h2"),
         loan_type=finder.find_element_text(data_xpath / "div[1]" / "div[2]"),
         status=finder.find_element_text(data_xpath / "div[1]" / "div[4]"),
         repayment_plan=finder.find_element_text(data_xpath / "div[2]" / "p[2]"),
