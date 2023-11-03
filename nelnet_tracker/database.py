@@ -17,6 +17,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS main_record (
+            row_id INTEGER PRIMARY KEY,
             scrape_timestamp TEXT NOT NULL,
             current_amount_due TEXT NOT NULL,
             due_date TEXT NOT NULL,
@@ -30,6 +31,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_group (
+            row_id INTEGER PRIMARY KEY,
             name TEXT NOT NULL
         )
         """
@@ -39,6 +41,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS group_record (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             group_id INTEGER NOT NULL,
             loan_type TEXT NOT NULL,
@@ -51,6 +54,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS payment_information (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             group_id INTEGER NOT NULL,
             current_amount_due TEXT NOT NULL,
@@ -64,6 +68,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS balance_information (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             group_id INTEGER NOT NULL,
             principal_balance TEXT NOT NULL,
@@ -78,6 +83,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan (
+            row_id INTEGER PRIMARY KEY,
             group_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             group_placement INTEGER NOT NULL
@@ -89,6 +95,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_record (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             loan_id INTEGER NOT NULL,
             loan_type TEXT NOT NULL,
@@ -103,6 +110,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_current_information (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             loan_id INTEGER NOT NULL,
             due_date TEXT NOT NULL,
@@ -119,6 +127,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_historic_information (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             loan_id INTEGER NOT NULL,
             convert_to_repayment TEXT NOT NULL,
@@ -130,6 +139,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_disbursement (
+            row_id INTEGER PRIMARY KEY,
             loan_historic_information_id INTEGER NOT NULL,
             info TEXT NOT NULL
         )
@@ -139,6 +149,7 @@ def create_database() -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS loan_benefit_details (
+            row_id INTEGER PRIMARY KEY,
             main_record_id INTEGER NOT NULL,
             loan_id INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -169,6 +180,7 @@ class DatabaseRecord:
         self.con: sqlite3.Connection = sqlite3.connect(CONFIG.database_path)
         self.cur: sqlite3.Cursor = self.con.cursor()
 
+        self.propagate_blank_row_id()
         main_record_id: int = self.insert_main_record()
         self.propagate_main_record_id(main_record_id)
         for group in self.data["groups"]:
@@ -189,6 +201,20 @@ class DatabaseRecord:
         self.con.commit()
         self.con.close()
 
+    def propagate_blank_row_id(self) -> None:
+        """Inserts a None in each section of the data dictionary that will be
+        used as data in INSERT statements.
+        """
+        self.data["row_id"] = None
+        for group in self.data["groups"]:
+            group["row_id"] = None
+            group["payment_information"]["row_id"] = None
+            group["balance_information"]["row_id"] = None
+            for loan in group["loans"]:
+                loan["row_id"] = None
+                loan["current_information"]["row_id"] = None
+                loan["historic_information"]["row_id"] = None
+
     def insert_main_record(self) -> int:
         """Inserts the main record data into the database and returns the new
         main record ID.
@@ -196,6 +222,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO main_record VALUES (
+                :row_id,
                 :scrape_timestamp,
                 :current_amount_due,
                 :due_date,
@@ -231,7 +258,7 @@ class DatabaseRecord:
         self.cur.execute("SELECT id FROM loan_group WHERE :name == ?", group)
         result: tuple | None = self.cur.fetchone()
         if result is None:
-            self.cur.execute("INSERT INTO loan_group VALUES (:name)", group)
+            self.cur.execute("INSERT INTO loan_group VALUES (:row_id, :name)", group)
             row_id: int | None = self.cur.lastrowid
             if row_id is None:
                 raise RuntimeError("Didn't get the new loan group ID")
@@ -254,6 +281,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO group_record VALUES (
+                :row_id,
                 :main_record_id,
                 :group_id,
                 :loan_type,
@@ -268,6 +296,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO payment_information VALUES (
+                :row_id,
                 :main_record_id,
                 :group_id,
                 :current_amount_due,
@@ -283,6 +312,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO balance_information VALUES (
+                :row_id,
                 :main_record_id,
                 :group_id,
                 :principal_balance,
@@ -302,7 +332,7 @@ class DatabaseRecord:
         result: tuple | None = self.cur.fetchone()
         if result is None:
             self.cur.execute(
-                "INSERT INTO loan VALUES (:group_id, :name, :group_placement)",
+                "INSERT INTO loan VALUES (:row_id, :group_id, :name, :group_placement)",
                 loan,
             )
             row_id: int | None = self.cur.lastrowid
@@ -326,6 +356,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO loan_record VALUES (
+                :row_id,
                 :main_record_id,
                 :loan_id,
                 :loan_type,
@@ -342,6 +373,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO loan_current_information VALUES (
+                :row_id,
                 :main_record_id,
                 :loan_id,
                 :due_date,
@@ -363,6 +395,7 @@ class DatabaseRecord:
         self.cur.execute(
             """
             INSERT INTO loan_historic_information VALUES (
+                :row_id,
                 :main_record_id,
                 :loan_id,
                 :convert_to_repayment,
@@ -381,11 +414,13 @@ class DatabaseRecord:
             self.cur.execute(
                 """
                 INSERT INTO loan_disbursement VALUES (
+                    :row_id,
                     :loan_historic_information_id,
                     :info
                 )
                 """,
                 dict(
+                    row_id=None,
                     loan_historic_information_id=historic_info_id,
                     info=disbursement,
                 ),
@@ -396,6 +431,7 @@ class DatabaseRecord:
             self.cur.execute(
                 """
                 INSERT INTO loan_benefit_details VALUES (
+                    :row_id,
                     :main_record_id,
                     :loan_id,
                     :name,
@@ -403,6 +439,7 @@ class DatabaseRecord:
                 )
                 """,
                 dict(
+                    row_id=None,
                     main_record_id=loan["main_record_id"],
                     loan_id=loan["loan_id"],
                     name=benefit[0],
