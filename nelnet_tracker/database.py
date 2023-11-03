@@ -255,7 +255,7 @@ class DatabaseRecord:
         """Inserts the given loan group into the database, if it does not
         exist, and returns the new group ID.
         """
-        self.cur.execute("SELECT id FROM loan_group WHERE :name == ?", group)
+        self.cur.execute("SELECT row_id FROM loan_group WHERE name == :name", group)
         result: tuple | None = self.cur.fetchone()
         if result is None:
             self.cur.execute("INSERT INTO loan_group VALUES (:row_id, :name)", group)
@@ -328,7 +328,7 @@ class DatabaseRecord:
         """Inserts the given loan into the database, if it does not exist, and
         returns the new loan ID.
         """
-        self.cur.execute("SELECT id FROM loan WHERE name == :name", loan)
+        self.cur.execute("SELECT row_id FROM loan WHERE name == :name", loan)
         result: tuple | None = self.cur.fetchone()
         if result is None:
             self.cur.execute(
@@ -410,7 +410,7 @@ class DatabaseRecord:
         return row_id
 
     def insert_loan_disbursements(self, loan: dict, historic_info_id: int) -> None:
-        for disbursement in loan["disbursements"]:
+        for disbursement in loan["historic_information"]["disbursements"]:
             self.cur.execute(
                 """
                 INSERT INTO loan_disbursement VALUES (
