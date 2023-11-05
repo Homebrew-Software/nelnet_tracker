@@ -4,14 +4,17 @@ version = "0.1.0"
 description = "Tracks status of loans on nelnet."
 authors = ["n8jhj <nathaniel-j-jones@proton.me>"]
 license = "MIT"
-readme = "README.md"
-packages = [{include = "nelnet_tracker"}]
+readme = "README.adoc"
+packages = [{ include = "nelnet_tracker" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 selenium = "^4.14.0"
 platformdirs = "^3.11.0"
+click = "^8.1.7"
 
+[tool.poetry.scripts]
+nelnet_tracker = "nelnet_tracker.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]
