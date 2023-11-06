@@ -25,7 +25,6 @@ def cli() -> None:
 )
 def scrape(json_path: Path | None) -> None:
     """Scrape data from the Nelnet website and store it as a database entry."""
-    # Handle path input.
     if json_path is not None:
         # Expand "~" to the username.
         json_path = json_path.expanduser()
@@ -38,4 +37,21 @@ def scrape(json_path: Path | None) -> None:
     else:
         click.echo("Writing record to database")
         write_record_to_database(data)
+    click.echo("All done!")
+
+
+@cli.command()
+@click.argument(
+    "json_path",
+    type=click.Path(exists=True, path_type=Path),
+    help="Path to the JSON data file.",
+)
+def from_json(json_path: Path) -> None:
+    """Record data from a JSON file as a database entry."""
+    json_path = json_path.expanduser()
+    click.echo(f"Reading {json_path}")
+    with open(json_path, "r") as jf:
+        data: dict = json.load(jf)
+    click.echo("Writing record to database")
+    write_record_to_database(data)
     click.echo("All done!")
