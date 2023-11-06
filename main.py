@@ -1,8 +1,8 @@
 """The main script. Useful for debugging."""
 
-from nelnet_tracker.scrape import scrape_all_data
+from nelnet_tracker.cli import scrape
 
 if __name__ == "__main__":
-    data: dict = scrape_all_data()
+    scrape(["--json", "~/nelnet_data.json"])
 
     print("done")
