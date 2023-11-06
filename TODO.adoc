@@ -2,3 +2,16 @@
 
 * [ ] Do some research into how Nelnet services loan payments and do a better job explaining it in the repo README.
 * [x] Create a class to handle XPaths similar to how pathlib Paths handle constructing paths with the `/` (divide) operator. This one could also use the `//` (integer divide) operator when appropriate (cf. https://www.w3schools.com/xml/xpath_syntax.asp[XPath syntax]).
+* [x] Add plotting.
+* [x] Allow JSON file usage for scrape records
+** [x] Allow storing scraped data as JSON file.
+** [x] Allow importing JSON file to database record.
+* [ ] Implement a JSON user config file.
+* [ ] Use a dark theme for matplotlib plots.
+* [ ] Highlight the latest data point with red color if its timestamp is recent to within a configured time delta.
+* [ ] Show disk space used by latest record.
+* [ ] Expose database statistics (num entries) via CLI.
+* [ ] Duplicate records - "2 is 1 and 1 is none."
+** [ ] Track latest duplication point in database.
+* [ ] Slim down the database by removing duplicate info (like loan historic information).
+* [ ] Facilitate running via crontab by running if a configured amount of time has passed since last scrape.
