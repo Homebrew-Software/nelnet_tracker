@@ -10,6 +10,7 @@ class Config:
         self.app_name: str = "nelnet_tracker"
         self.app_author: str = "Homebrew-Software"
         self.database_name: str = "nelnet_records.sqlite3"
+        self.plot_figure_size: tuple[int, int] = (10, 6)
 
     @property
     def database_path(self) -> Path:

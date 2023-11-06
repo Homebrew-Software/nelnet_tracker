@@ -452,3 +452,13 @@ def write_record_to_database(data: dict) -> None:
     """Inserts a record entry into the database."""
     record: DatabaseRecord = DatabaseRecord(data)
     record.insert_all()
+
+
+def select_all_balances() -> list[tuple[str, str]]:
+    """Returns all associated timestamps and aggregate balances."""
+    con = sqlite3.connect(CONFIG.database_path)
+    with con:
+        result: list[tuple[str, str]] = con.execute(
+            "SELECT scrape_timestamp, current_balance FROM main_record"
+        ).fetchall()
+    return result

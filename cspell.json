@@ -3,8 +3,11 @@
   "language": "en",
   "allowCompoundWords": true,
   "words": [
+    "dtype",
     "lastrowid",
+    "ndarray",
     "Nelnet",
-    "platformdirs"
+    "platformdirs",
+    "pyplot"
   ]
 }

@@ -8,13 +8,15 @@ readme = "README.adoc"
 packages = [{ include = "nelnet_tracker" }]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.13"
 selenium = "^4.14.0"
 platformdirs = "^3.11.0"
 click = "^8.1.7"
+matplotlib = "^3.8.1"
+numpy = "^1.26.1"
 
 [tool.poetry.scripts]
-nelnet_tracker = "nelnet_tracker.cli:cli"
+nelnet-tracker = "nelnet_tracker.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]

@@ -6,12 +6,13 @@ from pathlib import Path
 import click
 
 from .database import write_record_to_database
+from .plot import plot_aggregate_balance
 from .scrape import scrape_all_data
 
 
 @click.group()
 def cli() -> None:
-    """The nelnet_tracker command line interface."""
+    """Nelnet Tracker command line interface."""
     ...
 
 
@@ -44,7 +45,6 @@ def scrape(json_path: Path | None) -> None:
 @click.argument(
     "json_path",
     type=click.Path(exists=True, path_type=Path),
-    help="Path to the JSON data file.",
 )
 def from_json(json_path: Path) -> None:
     """Record data from a JSON file as a database entry."""
@@ -55,3 +55,14 @@ def from_json(json_path: Path) -> None:
     click.echo("Writing record to database")
     write_record_to_database(data)
     click.echo("All done!")
+
+
+@cli.group()
+def plot():
+    """Data plotting functions."""
+
+
+@plot.command("balance")
+def plot_agg_balance() -> None:
+    """Plot the aggregate balance of all loans over time."""
+    plot_aggregate_balance()

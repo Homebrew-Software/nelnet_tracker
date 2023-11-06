@@ -1,8 +1,6 @@
 """The main script. Useful for debugging."""
 
-from nelnet_tracker.cli import scrape
+from nelnet_tracker.cli import plot_agg_balance
 
 if __name__ == "__main__":
-    scrape(["--json", "~/nelnet_data.json"])
-
-    print("done")
+    plot_agg_balance([])
