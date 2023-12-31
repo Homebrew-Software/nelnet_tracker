@@ -30,6 +30,9 @@ def scrape(json_path: Path | None) -> None:
         # Expand "~" to the username.
         json_path = json_path.expanduser()
     click.echo("Opening automated web driver")
+    click.echo(
+        'Please navigate to the "My Loans" page, then return here to press Enter.'
+    )
     data: dict = scrape_all_data()
     if json_path:
         click.echo(f"Writing record to {json_path}")

@@ -15,3 +15,5 @@
 ** [ ] Track latest duplication point in database.
 * [ ] Slim down the database by removing duplicate info (like loan historic information).
 * [ ] Facilitate running via crontab by running if a configured amount of time has passed since last scrape.
+* [x] *bug:* Fix scraping when there's an amount past due. Somehow there's an error element blocking the dropdowns that we try to click. Not sure if it's related to having an amount past due, or if we aren't waiting long enough.
+* [ ] *enhancement:* Record amounts past due as well, when they're available.

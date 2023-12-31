@@ -58,9 +58,7 @@ class WebScraper:
     def scrape_all_data(self) -> dict:
         self.driver.get("https://secure.nelnet.com/account/login")
 
-        input("Press Enter after you have logged in.")
-
-        self.driver.get("https://secure.nelnet.com/loan-details")
+        input('Press Enter after you have logged in and reached the "My Loans" page.')
 
         # Start by scraping overview data.
         main_node: NodeXPath = (
