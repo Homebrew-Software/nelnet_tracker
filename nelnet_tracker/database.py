@@ -19,6 +19,8 @@ def create_database() -> None:
         CREATE TABLE IF NOT EXISTS main_record (
             row_id INTEGER PRIMARY KEY,
             scrape_timestamp TEXT NOT NULL,
+            past_due_amount TEXT NOT NULL,
+            monthly_payment_remaining TEXT NOT NULL,
             current_amount_due TEXT NOT NULL,
             due_date TEXT NOT NULL,
             current_balance TEXT NOT NULL,
@@ -224,6 +226,8 @@ class DatabaseRecord:
             INSERT INTO main_record VALUES (
                 :row_id,
                 :scrape_timestamp,
+                :past_due_amount,
+                :monthly_payment_remaining,
                 :current_amount_due,
                 :due_date,
                 :current_balance,

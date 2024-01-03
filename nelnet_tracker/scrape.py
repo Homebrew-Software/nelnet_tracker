@@ -130,16 +130,37 @@ class WebScraper:
 
     def scrape_overview_data(self, main_node: NodeXPath) -> dict:
         finder: ElementFinder = self.finder
-        return dict(
-            current_amount_due=finder.find_element_text(
-                main_node / "div[1]" / "div[2]"
-            ),
-            due_date=finder.find_element_text(main_node / "div[1]" / "div[4]"),
-            current_balance=finder.find_element_text(main_node / "div[2]" / "div[2]"),
-            last_payment_received=finder.find_element_text(
-                main_node / "div[2]" / "div[4]" / "div"
-            ),
+
+        # If you have some amount past due, the layout is different.
+        first_div_text: str = finder.find_element_text(main_node / "div[1]" / "div[1]")
+        fields: dict[str, int]
+        if "past due amount" in first_div_text.lower():
+            fields = dict(
+                past_due_amount=2,
+                monthly_payment_remaining=4,
+                current_amount_due=6,
+                due_date=8,
+            )
+        elif "current amount due" in first_div_text.lower():
+            fields = dict(
+                current_amount_due=2,
+                due_date=4,
+            )
+        else:
+            raise RuntimeError("Neither of the expected overview fields found.")
+
+        data: dict[str, str] = dict.fromkeys(
+            ("past_due_amount", "monthly_payment_remaining"), ""
         )
+        for k, v in fields.items():
+            data[k] = finder.find_element_text(main_node / "div[1]" / f"div[{v}]")
+        data["current_balance"] = finder.find_element_text(
+            main_node / "div[2]" / "div[2]"
+        )
+        data["last_payment_received"] = finder.find_element_text(
+            main_node / "div[2]" / "div[4]" / "div"
+        )
+        return data
 
     def scrape_group_data(self, group_xpath: NodeXPath) -> dict:
         finder: ElementFinder = self.finder
