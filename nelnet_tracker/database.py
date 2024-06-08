@@ -62,6 +62,7 @@ def create_database() -> None:
             current_amount_due TEXT NOT NULL,
             due_date TEXT NOT NULL,
             interest_rate TEXT NOT NULL,
+            regular_monthly_payment_amount TEXT NOT NULL,
             last_payment_received TEXT NOT NULL
         )
         """
@@ -306,6 +307,7 @@ class DatabaseRecord:
                 :current_amount_due,
                 :due_date,
                 :interest_rate,
+                :regular_monthly_payment_amount,
                 :last_payment_received
             )
             """,

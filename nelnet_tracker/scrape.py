@@ -176,8 +176,11 @@ class WebScraper:
                 interest_rate=finder.find_element_text(
                     data_xpath / "div[3]" / "div[6]"
                 ),
+                regular_monthly_payment_amount=finder.find_element_text(
+                    data_xpath / "div[3]" / "div[8]"
+                ),
                 last_payment_received=finder.find_element_text(
-                    data_xpath / "div[3]" / "div[8]" / "div"
+                    data_xpath / "div[3]" / "div[10]" / "div"
                 ),
             ),
             balance_information=dict(
