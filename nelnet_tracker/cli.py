@@ -1,7 +1,9 @@
 """Defines the command line interface."""
 
+from importlib.metadata import version
 import json
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -10,7 +12,25 @@ from .plot import plot_aggregate_balance
 from .scrape import scrape_all_data
 
 
+def print_version(ctx: click.Context, param: click.Parameter, value: Any) -> None:
+    # Adapted from the Click documentation:
+    # https://click.palletsprojects.com/en/8.1.x/options/#callbacks-and-eager-options
+    if not value or ctx.resilient_parsing:
+        return
+    pkg_name: str = __name__.split(".", maxsplit=1)[0]
+    click.echo(f"{pkg_name} {version(pkg_name)}")
+    ctx.exit()
+
+
 @click.group()
+@click.option(
+    "--version",
+    is_flag=True,
+    callback=print_version,
+    expose_value=False,
+    is_eager=True,
+    help="Show the version and exit.",
+)
 def cli() -> None:
     """Nelnet Tracker command line interface."""
     ...
