@@ -86,9 +86,7 @@ class WebScraper:
         i: int = 0
         while True:
             group_xpath: NodeXPath = (
-                main_node
-                / "div[@class='u-grid-container']"
-                / f"div[@class='ng-star-inserted'][{i+1}]"
+                main_node / "div[3]" / f"div[@class='ng-star-inserted'][{i+1}]"
             )
             try:
                 self.finder.find_element(group_xpath)
@@ -169,7 +167,7 @@ class WebScraper:
             name=finder.find_element_text(group_xpath / "h2"),
             loan_type=finder.find_element_text(data_xpath / "div[1]" / "div[2]"),
             status=finder.find_element_text(data_xpath / "div[1]" / "div[4]"),
-            repayment_plan=finder.find_element_text(data_xpath / "div[2]" / "p[2]"),
+            repayment_plan=finder.find_element_text(data_xpath / "div[2]" / "div[2]"),
             payment_information=dict(
                 current_amount_due=finder.find_element_text(
                     data_xpath / "div[3]" / "div[2]"
