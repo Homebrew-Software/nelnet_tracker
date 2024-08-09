@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nelnet-tracker"
-version = "0.2.3"
+version = "0.2.4"
 description = "Tracks status of loans on nelnet."
 authors = ["n8jhj <nathaniel-j-jones@proton.me>"]
 license = "MIT"

@@ -56,7 +56,7 @@ class WebScraper:
         self.finder: ElementFinder = ElementFinder(self.driver)
 
     def scrape_all_data(self) -> dict:
-        self.driver.get("https://secure.nelnet.com/account/login")
+        self.driver.get("https://nelnet.studentaid.gov/account/login")
 
         input('Press Enter after you have logged in and reached the "My Loans" page.')
 
