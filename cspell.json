@@ -3,6 +3,8 @@
   "language": "en",
   "allowCompoundWords": true,
   "words": [
+    "debugpy",
+    "divs",
     "dtype",
     "lastrowid",
     "ndarray",

@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -14,9 +14,17 @@
         },
         {
             "name": "Python: main.py",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: debug.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "debug.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

@@ -71,7 +71,7 @@ class WebScraper:
             / "loan-loan-details"
             / "loan-single-account"
             / "div"
-            / "div[2]"
+            / "div[3]"
         )
 
         # Wait for the main content to load.
@@ -142,7 +142,7 @@ class WebScraper:
         elif "current amount due" in first_div_text.lower():
             fields = dict(
                 current_amount_due=2,
-                due_date=4,
+                due_date=6,
             )
         else:
             raise RuntimeError("Neither of the expected overview fields found.")
@@ -156,7 +156,7 @@ class WebScraper:
             main_node / "div[2]" / "div[2]"
         )
         data["last_payment_received"] = finder.find_element_text(
-            main_node / "div[2]" / "div[4]" / "div"
+            main_node / "div[2]" / "div[6]"
         )
         return data
 
